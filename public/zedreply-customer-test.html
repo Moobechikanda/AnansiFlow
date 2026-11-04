@@ -3,31 +3,54 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AnansiFlow Customer Test</title>
+  <title>AnansiFlow sample customer chat</title>
+  <style>
+    body { margin: 0; padding: 2rem; color: #172b4d; font: 16px/1.5 Arial, sans-serif; }
+    main { max-width: 42rem; margin: 3rem auto; }
+    #brand-logo { max-width: 100%; height: auto; }
+    h1 { margin-top: 2rem; }
+    #dashboard-link { display: inline-block; margin-top: 1rem; color: #1264a3; }
+  </style>
 </head>
 <body>
   <main>
     <img id="brand-logo" alt="AnansiFlow" width="180">
-    <h1>AnansiFlow customer chat</h1>
-    <p>No company signup is needed. Open the chat launcher at the bottom left to try the sample business assistant. Its company details are fictional.</p>
+    <h1>AnansiFlow sample customer chat</h1>
+    <p id="chat-description"></p>
+    <a id="dashboard-link" href="/">Open the AnansiFlow dashboard</a>
   </main>
   <script>
     (function (document, tagName) {
       const baseUrl = window.location.origin;
-      document.getElementById('brand-logo').src = `${baseUrl}/brand-assets/zedreply-logo.svg`;
-      const script = document.createElement(tagName);
-      const firstScript = document.getElementsByTagName(tagName)[0];
+      const parameters = new URLSearchParams(window.location.search);
+      const hasCompanyToken = parameters.has('website_token');
+      const websiteToken =
+        parameters.get('website_token') || 'zq8dMMfPZTmHneh5XExdEjUJ';
+      const businessName =
+        parameters.get('business_name') || 'AnansiFlow Sample Business';
+
+      document.getElementById('brand-logo').src =
+        `${baseUrl}/brand-assets/anansiflow-logo.svg`;
+      if (hasCompanyToken) {
+        document.querySelector('h1').textContent =
+          `${businessName} customer chat`;
+        document.getElementById('chat-description').textContent =
+          `This test chat is connected to ${businessName}'s website inbox.`;
+      } else {
+        document.getElementById('chat-description').textContent =
+          'This URL opens the AnansiFlow sample business, not your company-specific chat. To test your company, sign in to the dashboard, open Settings > Inboxes > your website inbox, then click Open live test chat.';
+      }
 
       window.chatwootSettings = { position: 'left' };
       window.addEventListener('chatwoot:ready', () => {
         window.$chatwoot.toggle('open');
       }, { once: true });
+
+      const script = document.createElement(tagName);
+      const firstScript = document.getElementsByTagName(tagName)[0];
       script.src = `${baseUrl}/packs/js/sdk.js`;
       script.async = true;
-      script.onload = () => window.chatwootSDK.run({
-        websiteToken: 'zq8dMMfPZTmHneh5XExdEjUJ',
-        baseUrl,
-      });
+      script.onload = () => window.chatwootSDK.run({ websiteToken, baseUrl });
       firstScript.parentNode.insertBefore(script, firstScript);
     })(document, 'script');
   </script>

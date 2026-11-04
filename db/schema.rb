@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_31_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_19_000000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -505,8 +505,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_31_000000) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_captain_faq_suggestions_on_account_id"
     t.index ["account_id", "assistant_id", "status", "language"], name: "idx_cap_faq_suggestions_on_account_assistant_status_language"
+    t.index ["account_id"], name: "index_captain_faq_suggestions_on_account_id"
     t.index ["assistant_id"], name: "index_captain_faq_suggestions_on_assistant_id"
     t.index ["embedding"], name: "vector_idx_captain_faq_suggestions_embedding", opclass: :vector_cosine_ops, using: :ivfflat
   end
@@ -749,8 +749,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_31_000000) do
     t.jsonb "phone_number_health", default: {}, null: false
     t.datetime "phone_number_health_checked_at"
     t.string "phone_number_health_error", limit: 500
-    t.index ["phone_number_health_checked_at"], name: "index_channel_whatsapp_on_phone_number_health_checked_at"
     t.index ["phone_number"], name: "index_channel_whatsapp_on_phone_number", unique: true
+    t.index ["phone_number_health_checked_at"], name: "index_channel_whatsapp_on_phone_number_health_checked_at"
   end
 
   create_table "companies", force: :cascade do |t|
@@ -1090,10 +1090,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_31_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "inbox_id"
-    t.index ["account_id", "name", "template_type", "locale"], name: "index_email_templates_on_account_scope", unique: true, where: "(account_id IS NOT NULL) AND (inbox_id IS NULL)"
+    t.index ["account_id", "name", "template_type", "locale"], name: "index_email_templates_on_account_scope", unique: true, where: "((account_id IS NOT NULL) AND (inbox_id IS NULL))"
     t.index ["inbox_id", "name", "template_type", "locale"], name: "index_email_templates_on_inbox_scope", unique: true, where: "(inbox_id IS NOT NULL)"
     t.index ["inbox_id"], name: "index_email_templates_on_inbox_id"
-    t.index ["name", "template_type", "locale"], name: "index_email_templates_on_installation_scope", unique: true, where: "(account_id IS NULL) AND (inbox_id IS NULL)"
+    t.index ["name", "template_type", "locale"], name: "index_email_templates_on_installation_scope", unique: true, where: "((account_id IS NULL) AND (inbox_id IS NULL))"
   end
 
   create_table "folders", force: :cascade do |t|
@@ -1428,6 +1428,56 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_31_000000) do
     t.index ["account_id", "metric", "date"], name: "index_rollup_timeseries"
   end
 
+  create_table "sales_document_payments", force: :cascade do |t|
+    t.bigint "sales_document_id", null: false
+    t.decimal "amount", precision: 14, scale: 2, null: false
+    t.string "method", null: false
+    t.string "provider"
+    t.string "reference"
+    t.date "paid_at", null: false
+    t.text "notes"
+    t.bigint "recorded_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recorded_by_id"], name: "index_sales_document_payments_on_recorded_by_id"
+    t.index ["sales_document_id"], name: "index_sales_document_payments_on_sales_document_id"
+  end
+
+  create_table "sales_documents", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id"
+    t.bigint "conversation_id"
+    t.bigint "created_by_id"
+    t.bigint "converted_from_id"
+    t.string "document_type", null: false
+    t.string "number", null: false
+    t.string "status", default: "draft", null: false
+    t.string "currency", default: "ZMW", null: false
+    t.string "customer_name", null: false
+    t.string "customer_email"
+    t.string "customer_phone"
+    t.jsonb "line_items", default: [], null: false
+    t.decimal "subtotal", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "tax_rate", precision: 7, scale: 4, default: "0.0", null: false
+    t.decimal "tax_amount", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "total", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "amount_paid", precision: 14, scale: 2, default: "0.0", null: false
+    t.date "issue_date", null: false
+    t.date "due_date"
+    t.date "valid_until"
+    t.text "notes"
+    t.text "terms"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "document_type", "status"], name: "idx_on_account_id_document_type_status_21a663b666"
+    t.index ["account_id", "number"], name: "index_sales_documents_on_account_id_and_number", unique: true
+    t.index ["account_id"], name: "index_sales_documents_on_account_id"
+    t.index ["contact_id"], name: "index_sales_documents_on_contact_id"
+    t.index ["conversation_id"], name: "index_sales_documents_on_conversation_id"
+    t.index ["converted_from_id"], name: "index_sales_documents_on_converted_from_id"
+    t.index ["created_by_id"], name: "index_sales_documents_on_created_by_id"
+  end
+
   create_table "sla_events", force: :cascade do |t|
     t.bigint "applied_sla_id", null: false
     t.bigint "conversation_id", null: false
@@ -1603,6 +1653,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_31_000000) do
   add_foreign_key "campaign_recipients", "contacts", on_delete: :cascade
   add_foreign_key "campaign_recipients", "inboxes", on_delete: :cascade
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "sales_document_payments", "sales_documents"
+  add_foreign_key "sales_document_payments", "users", column: "recorded_by_id"
+  add_foreign_key "sales_documents", "accounts"
+  add_foreign_key "sales_documents", "contacts"
+  add_foreign_key "sales_documents", "conversations"
+  add_foreign_key "sales_documents", "sales_documents", column: "converted_from_id"
+  add_foreign_key "sales_documents", "users", column: "created_by_id"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").

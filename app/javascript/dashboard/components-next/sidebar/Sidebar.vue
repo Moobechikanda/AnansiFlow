@@ -678,6 +678,13 @@ const menuItems = computed(() => {
       ],
     },
     {
+      name: 'Sales documents',
+      label: t('SIDEBAR.SALES_DOCUMENTS'),
+      icon: 'i-lucide-receipt-text',
+      to: accountScopedRoute('sales_documents_index'),
+      activeOn: ['sales_documents_index'],
+    },
+    {
       name: 'Reports',
       label: t('SIDEBAR.REPORTS'),
       icon: 'i-lucide-chart-spline',

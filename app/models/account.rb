@@ -24,6 +24,7 @@
 #
 
 class Account < ApplicationRecord
+  has_many :sales_documents, dependent: :destroy
   # used for multi-flag bitset columns
   include FlagShihTzu
   include Reportable

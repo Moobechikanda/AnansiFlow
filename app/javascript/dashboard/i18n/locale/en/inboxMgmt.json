@@ -84,6 +84,7 @@
         "TITLE": "Website channel",
         "DESC": "Create a channel for your website and start supporting your customers via our website widget.",
         "LOADING_MESSAGE": "Creating Website Support Channel",
+        "OPEN_LIVE_TEST_CHAT": "Open live test chat",
         "CHANNEL_AVATAR": {
           "LABEL": "Channel Avatar"
         },
@@ -579,8 +580,8 @@
             "DESCRIPTION": "Create a live-chat widget"
           },
           "FACEBOOK": {
-            "TITLE": "Facebook",
-            "DESCRIPTION": "Connect your Facebook page"
+            "TITLE": "Facebook Messenger",
+            "DESCRIPTION": "Connect a Facebook Page to receive and reply to Messenger conversations in this inbox. A Meta app with approved permissions is required for live customer messages."
           },
           "WHATSAPP": {
             "TITLE": "WhatsApp",
@@ -611,8 +612,8 @@
             "DESCRIPTION": "Integrate your Line channel"
           },
           "INSTAGRAM": {
-            "TITLE": "Instagram",
-            "DESCRIPTION": "Connect your instagram account"
+            "TITLE": "Instagram Direct Messages",
+            "DESCRIPTION": "Connect a Business or Creator Instagram account linked to a Facebook Page. Meta permissions and a public HTTPS webhook are required."
           },
           "TIKTOK": {
             "TITLE": "TikTok",

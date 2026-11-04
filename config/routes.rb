@@ -223,6 +223,12 @@ Rails.application.routes.draw do
               resources :notes, only: [:index]
             end
           end
+          resources :sales_documents, only: [:index, :show, :create, :update, :destroy] do
+            member do
+              post :convert
+              post :payments
+            end
+          end
           resources :contacts, only: [:index, :show, :update, :create, :destroy] do
             collection do
               get :active

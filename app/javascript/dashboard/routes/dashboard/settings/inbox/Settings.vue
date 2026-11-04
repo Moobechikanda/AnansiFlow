@@ -305,6 +305,18 @@ export default {
     currentInboxId() {
       return this.$route.params.inboxId;
     },
+    customerTestChatUrl() {
+      const testUrl = new URL(
+        '/zedreply-customer-test.html',
+        window.location.origin
+      );
+      testUrl.searchParams.set('website_token', this.inbox.website_token);
+      testUrl.searchParams.set(
+        'business_name',
+        this.inbox.business_name || this.inbox.name
+      );
+      return testUrl.toString();
+    },
     inbox() {
       return this.$store.getters['inboxes/getInbox'](this.currentInboxId);
     },
@@ -1387,6 +1399,14 @@ export default {
             <div
               class="flex flex-col outline -outline-offset-1 outline-1 outline-n-weak w-full px-3 pt-3 pb-8 bg-n-surface-1 rounded-2xl min-h-[45rem] overflow-hidden"
             >
+              <a
+                :href="customerTestChatUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mb-4 inline-flex items-center justify-center rounded-lg bg-n-brand px-4 py-2 text-sm font-medium text-white"
+              >
+                {{ $t('INBOX_MGMT.ADD.WEBSITE_CHANNEL.OPEN_LIVE_TEST_CHAT') }}
+              </a>
               <Widget
                 :welcome-heading="channelWelcomeTitle"
                 :welcome-tagline="channelWelcomeTagline"

@@ -8,7 +8,7 @@ Run from the repository root:
 npm run dev
 ```
 
-Open `http://localhost:9000` for agents and `http://localhost:9000/zedreply-customer-test.html` for the local customer test page.
+The terminal prints plain, account-independent links: `http://localhost:9000/` for the dashboard and `http://localhost:9000/zedreply-customer-test.html` for the sample customer chat. To test a real business, sign in, select its website inbox under **Settings > Inboxes**, and click **Open live test chat**. That link uses the selected inbox's own assistant and business settings.
 
 Docker Desktop must be running. `npm run dev` starts the Docker services in the background. It prints both local URLs before starting Docker and opens the dashboard when Rails is ready.
 
@@ -103,7 +103,7 @@ This is read-only and reports, per feature: the business profile fields and prod
    npm run captain:provision
    ```
 4. Complete the **Business knowledge** fields and add products or services to the catalog on the assistant (Captain > the assistant > Settings > Basic). Archived catalog items remain saved but are excluded from answers. The assistant can use configured business profile/catalog data and approved, synced website knowledge; it cannot infer company details that have not been provided.
-5. Send a test message from the playground or open `/zedreply-customer-test.html` on the deployment domain. Locally, use `http://localhost:9000/zedreply-customer-test.html`. The public demo uses fictional sample details, and its OpenAI replies require the API key above.
+5. Send a test message from the assistant Playground. To test a real company website inbox, open **Settings > Inboxes > [website inbox] > Open live test chat**. The plain `/zedreply-customer-test.html` URL is the fictional sample business demo; company-specific links are generated inside the signed-in dashboard and are not printed in the terminal.
 
 After Captain hands a conversation to an agent, a background check returns an unanswered conversation to the pending queue after five minutes. Captain waits for the customer's next message before responding. The typed Captain-assignee rollout flag remains locked off in this deployment config; enable it only after all web and worker processes have been upgraded to read typed assignees.
 ## AI

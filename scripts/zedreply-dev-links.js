@@ -10,7 +10,8 @@ const waitOnly = process.argv.includes('--wait');
 
 function printLinks() {
   console.log('AnansiFlow dashboard: http://localhost:9000/');
-  console.log('Customer test chat: http://localhost:9000/zedreply-customer-test.html');
+  console.log('Sample customer test chat: http://localhost:9000/zedreply-customer-test.html');
+  console.log('For a company-specific chat, sign in and open Settings > Inboxes > that website inbox > Open live test chat.');
 }
 
 if (printOnly) {
