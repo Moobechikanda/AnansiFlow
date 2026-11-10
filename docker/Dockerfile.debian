@@ -1,0 +1,130 @@
+# Debian (glibc) build: uses precompiled native gems (grpc, nokogiri, ffi, google-protobuf)
+# instead of compiling them from source on Alpine/musl.
+
+FROM node:24-bookworm-slim AS node
+
+FROM ruby:3.4.4-slim-bookworm AS pre-builder
+
+ARG PNPM_VERSION="10.2.0"
+ARG BUNDLE_WITHOUT="development:test"
+ARG RAILS_SERVE_STATIC_FILES=true
+ARG RAILS_ENV=production
+ARG NODE_OPTIONS="--max-old-space-size=1536 --openssl-legacy-provider"
+
+ENV PNPM_VERSION=${PNPM_VERSION} \
+  BUNDLE_WITHOUT=${BUNDLE_WITHOUT} \
+  BUNDLER_VERSION=2.5.16 \
+  RAILS_SERVE_STATIC_FILES=${RAILS_SERVE_STATIC_FILES} \
+  RAILS_ENV=${RAILS_ENV} \
+  NODE_OPTIONS=${NODE_OPTIONS} \
+  BUNDLE_PATH=/gems \
+  DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    curl \
+    pkg-config \
+    libpq-dev \
+    libyaml-dev \
+    libssl-dev \
+    libffi-dev \
+    zlib1g-dev \
+    libvips-dev \
+    libprotobuf-dev \
+    protobuf-compiler \
+    tzdata \
+    xz-utils \
+  && rm -rf /var/lib/apt/lists/* \
+  && gem install bundler -v "$BUNDLER_VERSION"
+
+COPY --from=node /usr/local/bin/node /usr/local/bin/
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+  && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
+  && npm install -g pnpm@${PNPM_VERSION} \
+  && pnpm --version
+
+WORKDIR /app
+
+COPY Gemfile Gemfile.lock ./
+
+# Gemfile.lock lists no Linux platform, so add it inside the image only (the repo file is unchanged)
+# to let Bundler use the precompiled x86_64-linux gems.
+RUN bundle lock --add-platform x86_64-linux \
+  && bundle config set --local without "$BUNDLE_WITHOUT" \
+  && bundle install -j 2 -r 10
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm i
+
+COPY . /app
+RUN chmod +x /app/docker/entrypoints/rails.sh \
+    /app/docker/entrypoints/helpers/pg_database_url.rb
+
+# creating a log directory so that image wont fail when RAILS_LOG_TO_STDOUT is false
+RUN mkdir -p /app/log
+
+RUN if [ "$RAILS_ENV" = "production" ]; then \
+  NODE_OPTIONS="--max-old-space-size=2560 --openssl-legacy-provider" SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled bundle exec rake assets:precompile \
+  && rm -rf spec node_modules tmp/cache; \
+  fi
+
+RUN git rev-parse HEAD > /app/.git_sha
+
+RUN rm -rf /gems/ruby/3.4.0/cache/*.gem \
+  && find /gems/ruby/3.4.0/gems/ \( -name "*.c" -o -name "*.o" \) -delete \
+  && rm -rf .git \
+  && rm .gitignore
+
+# final build stage
+FROM ruby:3.4.4-slim-bookworm
+
+ARG PNPM_VERSION="10.2.0"
+ARG BUNDLE_WITHOUT="development:test"
+ARG EXECJS_RUNTIME="Disabled"
+ARG RAILS_SERVE_STATIC_FILES=true
+ARG RAILS_ENV=production
+
+ENV PNPM_VERSION=${PNPM_VERSION} \
+  BUNDLE_WITHOUT=${BUNDLE_WITHOUT} \
+  BUNDLER_VERSION=2.5.16 \
+  EXECJS_RUNTIME=${EXECJS_RUNTIME} \
+  RAILS_SERVE_STATIC_FILES=${RAILS_SERVE_STATIC_FILES} \
+  RAILS_ENV=${RAILS_ENV} \
+  BUNDLE_PATH=/gems \
+  VIPS_BLOCK_UNTRUSTED=1 \
+  DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    openssl \
+    tzdata \
+    postgresql-client \
+    imagemagick \
+    git \
+    libvips42 \
+    libpq5 \
+    libyaml-0-2 \
+    libprotobuf32 \
+    curl \
+  && rm -rf /var/lib/apt/lists/* \
+  && gem install bundler -v "$BUNDLER_VERSION"
+
+COPY --from=node /usr/local/bin/node /usr/local/bin/
+COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+RUN if [ "$RAILS_ENV" != "production" ]; then \
+  ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+  && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
+  && npm install -g pnpm@${PNPM_VERSION} \
+  && pnpm --version; \
+  fi
+
+COPY --from=pre-builder /gems/ /gems/
+COPY --from=pre-builder /app /app
+
+WORKDIR /app
+
+EXPOSE 3000

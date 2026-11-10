@@ -1,15 +1,15 @@
-x-zedreply-image: &zedreply-image
-  image: zedreply:local
+x-anansiflow-image: &anansiflow-image
+  image: anansiflow:local
   build:
     context: .
-    dockerfile: docker/Dockerfile
+    dockerfile: docker/Dockerfile.debian
 
 
 
 services:
   rails:
-    <<: *zedreply-image
+    <<: *anansiflow-image
     entrypoint: ["docker/entrypoints/rails.sh"]
 
   sidekiq:
-    <<: *zedreply-image
+    <<: *anansiflow-image

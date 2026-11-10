@@ -20,8 +20,10 @@ done
 
 echo "Database ready to accept connections."
 
-#install missing gems for local dev as we are using base image compiled for production
-bundle install
+# Production images already contain their gems; only install missing gems outside production
+if [ "$RAILS_ENV" != "production" ]; then
+  bundle install
+fi
 
 BUNDLE="bundle check"
 

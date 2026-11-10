@@ -4,6 +4,8 @@
 docker-compose.*
 docker/Dockerfile
 docker/dockerfiles
+backups
+cloud-upload
 log
 storage
 public/system
