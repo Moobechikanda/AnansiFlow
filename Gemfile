@@ -84,7 +84,7 @@ gem 'barnes'
 ##--- gems for authentication & authorization ---##
 gem 'devise', '>= 4.9.4'
 # 2.2.3 requires Devise 5; Chatwoot remains on Devise 4 for this upgrade stack.
-gem 'devise-secure_password', '2.2.1'
+gem 'devise-secure_password', '2.2.1', require: 'devise/secure_password'
 gem 'devise_token_auth', '>= 1.2.3'
 gem 'rails-i18n', '~> 7.0'
 # two-factor authentication
