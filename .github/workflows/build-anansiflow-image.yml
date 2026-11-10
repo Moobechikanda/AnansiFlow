@@ -1,6 +1,9 @@
 name: Build AnansiFlow image
 
 on:
+  push:
+    branches:
+      - build/anansiflow-debian-image
   workflow_dispatch:
 
 permissions:
