@@ -67,7 +67,7 @@ RUN chmod +x /app/docker/entrypoints/rails.sh \
 RUN mkdir -p /app/log
 
 RUN if [ "$RAILS_ENV" = "production" ]; then \
-  NODE_OPTIONS="--max-old-space-size=2560 --openssl-legacy-provider" SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled bundle exec rake assets:precompile \
+  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled bundle exec rake assets:precompile \
   && rm -rf spec node_modules tmp/cache; \
   fi
 
