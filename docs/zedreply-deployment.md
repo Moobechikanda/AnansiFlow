@@ -1,5 +1,33 @@
 # AnansiFlow Deployment Checklist
 
+## Isolated local recovery test
+
+The local recovery test uses a disposable copy of the recovered database, not
+the restored production volume. It has separate Redis and storage volumes,
+and Rails is attached only to an internal network. A reverse proxy publishes
+the test app only at `http://localhost:9001`. Test emails are captured locally
+at `http://localhost:9002` and are not delivered to real inboxes. External
+integrations cannot be tested in this configuration, and Sidekiq is disabled
+by default. Starting Sidekiq runs scheduled jobs against the disposable data.
+
+With the restricted `.env.anansiflow.production.local` file, the
+`anansiflow:local` image, and the `anansiflow_credcheck_pg_20261111` test
+volume already available, start the local test with:
+
+```powershell
+docker compose --env-file .env.anansiflow.production.local -f docker-compose.local-test.yaml up -d --no-build --pull never postgres redis rails mailpit proxy
+```
+
+Stop the test without deleting its volumes:
+
+```powershell
+docker compose --env-file .env.anansiflow.production.local -f docker-compose.local-test.yaml stop
+```
+
+This is not a production deployment. Once a public domain is ready, configure
+the public HTTPS `FRONTEND_URL` and Caddy `SITE_DOMAIN` separately, and review
+database freshness, Sidekiq, integrations, secrets and backups before cutover.
+
 ## Local startup
 
 Run from the repository root:
